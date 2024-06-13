@@ -44,9 +44,38 @@ async function run() {
   try {
     await client.connect();
     const ticket_booking_DB = client.db("ticket_booking_DB");
+    const ticketCollection = ticket_booking_DB.collection("ticketCollection");
+    const bookingCollection = ticket_booking_DB.collection("bookingCollection");
     const userCollection = ticket_booking_DB.collection("userCollection");
 
-   
+   //ticket
+   app.get("/tickets", async (req, res) => {
+    const ticketsData = ticketCollection.find();
+    const result = await ticketsData.toArray();
+    res.send(result);
+  });
+
+  app.get("/tickets/:id", async (req, res) => {
+    const id = req.params.id;
+    const ticketsData = await ticketCollection.findOne({
+      _id: new ObjectId(id),
+    });
+    res.send(ticketsData);
+  });
+
+  //booking
+  app.post("/booking", verifyToken, async (req, res) => {
+    const bookingData = req.body;
+    const result = await bookingCollection.insertOne(bookingData);
+    res.send(result);
+  });
+
+  app.get("/booking/:email", async (req, res) => {
+    const email = req.params.email;
+    const query = { email: email };
+    const result = await bookingCollection.find(query).toArray();
+    res.send(result);
+  });
     
     // user
     app.post("/user", async (req, res) => {
